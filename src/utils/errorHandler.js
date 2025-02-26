@@ -1,0 +1,1 @@
+// Provides helper functions for error handling and improving API responses

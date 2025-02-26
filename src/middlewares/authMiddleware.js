@@ -1,0 +1,1 @@
+ // Responsible for verifying user permissions using JWT or another authentication system

@@ -1,0 +1,1 @@
+ // Handles database queries related to Category operations

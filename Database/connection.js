@@ -1,0 +1,1 @@
+// Handles the database connection using Mongoose

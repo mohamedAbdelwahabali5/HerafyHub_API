@@ -1,0 +1,1 @@
+// General middleware for handling errors and sending appropriate responses

@@ -1,0 +1,1 @@
+// Contains functions to send emails to users 

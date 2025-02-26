@@ -1,0 +1,1 @@
+ // Defines API routes for Category and connects them to the Controller

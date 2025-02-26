@@ -1,0 +1,1 @@
+// Defines the Schema and Model for User
