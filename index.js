@@ -7,6 +7,7 @@ const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
 const app = express();
 
+// database connection
 connectDB();
 // Middleware
 app.use(express.json());
