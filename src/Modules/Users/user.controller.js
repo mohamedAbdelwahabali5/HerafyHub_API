@@ -36,4 +36,56 @@ const registerUser = async (req, res, next) => {
 }
 
 
+// login user --> authenticate user
+const loginUser = async (req,res,next)=>{
+    // destract email - pass from req body
+    const {email , password}=req.body;
+    console.log(req.body);
+    console.log("email : ", email);
+
+    const user = await User.findOne({email: email});
+    if(!user){
+        next(new APIError("Email Or Password are invalid", 401))
+        return ;
+    }
+
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if(!isMatch){
+        next(new APIError("Email Or Password are invalid", 401))
+        return ;
+    }
+
+    // generate token for this user --> token 
+    // but first we need to get payload  ---> paylaod is object which contains information about user that i nneed to store in token
+
+    const tokenPayload={
+        username: user.username,
+        email: user.email,
+        id: user._id,
+        role:user.role,
+        loggedAt:new Date().toISOString()
+    }
+    console.log(tokenPayload);
+    // generate token
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRATION});
+    console.log(token);
+    res.json({
+        success: true,
+        message: "User Login successfully",
+        token: token
+    })
+
+}
+
+
+
+
+// export all functions
+module.exports = {
+    registerUser,
+    loginUser
+}
+
+
+
 

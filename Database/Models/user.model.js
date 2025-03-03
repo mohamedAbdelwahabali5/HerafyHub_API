@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     address: { 
         type: String, 
         minLength: [10, 'Address must be more than 10 characters'],  
-        maxLength: [20, 'Address must be less than 20 characters'],
+        maxLength: [50, 'Address must be less than 20 characters'],
         required: true
     },
 
@@ -56,8 +56,8 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true ,
-        match:[/^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@$!%?&#])[A-Za-z\d@$!%?&#]{8,}$/, 'Invalid Password format'],
+        required: true,
+        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,}$/, 'Invalid Password format'],
     },
     role: {
         type: String,

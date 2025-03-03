@@ -5,6 +5,7 @@ const express = require("express");
 const connectDB = require('./Database/connection');
 const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
+const authRoutes = require("./src/Modules/Users/user.routes");
 const app = express();
 
 // database connection
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);
+app.use('/auth',authRoutes)
 
 
 // Start Server
