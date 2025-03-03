@@ -5,7 +5,7 @@ const {z} = require('zod');
 const validateSchema = (schema) => {
     return (req, res, next) => {
         try {
-            const validationResult = schema.safeParse(req.body);
+            const validationResult = schema.safeParse(req.body); 
             if (!validationResult.success) {
                 return res.status(400).json({
                     success: false,

@@ -31,26 +31,6 @@ app.use('/auth',authRoutes)
 
 
 
-//   async function run() {
-//     try {
-//       // Connect to MongoDB Atlas
-//       await mongoose.connect(uri, {
-//         useNewUrlParser: true,
-//         useUnifiedTopology: true,
-//       });
-//       console.log("Connected to MongoDB Atlas");
-  
-//       // Insert the data
-//       const result = await Product.insertMany(products);
-//       console.log(`${result.length} documents inserted`);
-//     } finally {
-//       // Close the connection
-//       await mongoose.connection.close();
-//       console.log("Connection closed");
-//     }
-//   }
-  
-//   run().catch(console.error);
 
 // Start Server
 const PORT = process.env.PORT || 4444;

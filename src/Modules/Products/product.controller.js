@@ -66,22 +66,29 @@ exports.deleteProduct = async (req, res) => {
 // search by title
 exports.searchProductsByTitle = async (req, res) => {
     try {
-        console.log("Received search request with query:", req.query); 
+        const { title } = req.query;
 
-        if (!req.query.title) {
-            return res.status(400).json({ message: "Search term is required" });
+        if (!title) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Search term is required" 
+            });
         }
 
-        const searchRegex = new RegExp(req.query.title, 'i'); 
-        console.log(`Searching for products with title: "${req.query.title}"`);
-
+        const searchRegex = new RegExp(title, 'i');
         const products = await Product.find({ title: searchRegex }).populate('category');
 
-        console.log(`Found ${products.length} products`);
-        res.json(products);
+        res.json({
+            success: true,
+            count: products.length,
+            data: products
+        });
     } catch (err) {
-        console.error("Search error:", err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ 
+            success: false,
+            message: 'Error searching products',
+            error: err.message 
+        });
     }
 };
 
