@@ -77,6 +77,6 @@ userSchema.pre('save', async function(){
 
 
 // when you deleteing user you need to delete all attched properties [orders , carts , favorite products]
-// to-do
+// to-do  
 
 module.exports = mongoose.model('User', userSchema);
