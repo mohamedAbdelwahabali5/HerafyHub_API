@@ -5,22 +5,14 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../Products/product.controller");
 
-
+// Place specific routes before parameter routes
 router.post("/", productController.createProduct);
-
 router.get("/", productController.getAllProducts);
-
-router.get("/:id", productController.getProductById);
-
-// router.put("/:id", productController.updateProduct);
-
-router.delete("/:id", productController.deleteProduct);
-
-router.post("/product/search", productController.searchProductsByTitle);
-
+router.get("/search", productController.searchProductsByTitle);
 router.post("/all", productController.insertMenyProducts);
 
-module.exports = router;
+// Then place parameter routes
+router.get("/:id", productController.getProductById);
+router.delete("/:id", productController.deleteProduct);
 
-// The ProductController is responsible for handling the logic for products,
-//  such as creating, reading, updating, and deleting. It interacts with the Product model to perform these operations.
+module.exports = router;

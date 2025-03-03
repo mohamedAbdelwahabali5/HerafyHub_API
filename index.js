@@ -1,10 +1,8 @@
 // The main entry file that starts the server and loads all necessary configurations
 
 const express = require("express");
-require('dotenv').config({path:'.env'});
 const cors = require('cors');
-
-
+// require('dotenv').config();
 const connectDB = require('./Database/connection');
 const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
@@ -27,6 +25,9 @@ app.use(express.json());
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);
 app.use('/auth',authRoutes)
+
+
+
 
 
 
