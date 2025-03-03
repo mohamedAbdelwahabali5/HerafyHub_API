@@ -8,9 +8,12 @@ const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
 
 // const cloudinary = require('./cloudinary');
+
+const authRoutes = require("./src/Modules/Users/user.routes");
 const app = express();
 app.use(cors());
 
+// database connection
 connectDB();
 
 // Middleware
@@ -21,6 +24,7 @@ app.use(express.json());
 
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);
+app.use('/auth',authRoutes)
 
 
 
