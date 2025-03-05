@@ -2,6 +2,7 @@
 
 
 const Product = require('../../../Database/Models/product.model');
+const mongoose = require("mongoose");
 
 // POST method
 
@@ -18,20 +19,51 @@ exports.createProduct = async (req, res) => {
 
 // GET method (Read All)
 
+// exports.getAllProducts = async (req, res) => {
+//     let page = parseInt(req.query.page) || 1;  
+//     let limit = parseInt(req.query.limit) || 10; 
+//     let skip = (page - 1) * limit; 
+
+//     let products = await Product.find().skip(skip).limit(limit); 
+//     let totalProducts = await Product.countDocuments(); // العدد الكلي للمنتجات
+
+//     res.json({
+//         products,
+//         totalProducts,
+//         totalPages: Math.ceil(totalProducts / limit),
+//         currentPage: page
+//     });
+// };
+
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().populate('category');
-        res.json(products);
+        let page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10;
+        let skip = (page - 1) * limit;
+
+        let query = {};
+        if (req.query.categoryId) {
+            query.category = req.query.categoryId; // تصفية المنتجات بناءً على categoryId
+        }
+
+        let products = await Product.find(query).skip(skip).limit(limit);
+        let totalProducts = await Product.countDocuments(query);
+
+        res.json({
+            products,
+            totalProducts,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: page
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
-
 // GET method (Read One)
 
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('category');
+        const product = await Product.findById(req.params.id).populate('category', 'title description'); 
         if (!product) return res.status(404).json({ message: 'Product not found!' });
         res.json(product);
     } catch (err) {
@@ -66,34 +98,52 @@ exports.deleteProduct = async (req, res) => {
 // search by title
 exports.searchProductsByTitle = async (req, res) => {
     try {
-        console.log("Received search request with query:", req.query); 
+        const { title } = req.query;
 
-        if (!req.query.title) {
-            return res.status(400).json({ message: "Search term is required" });
+        if (!title) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Search term is required" 
+            });
         }
 
-        const searchRegex = new RegExp(req.query.title, 'i'); 
-        console.log(`Searching for products with title: "${req.query.title}"`);
+        const searchRegex = new RegExp(title, 'i');
+        const products = await Product.find({ title: searchRegex }).populate('categoryId');
 
-        const products = await Product.find({ title: searchRegex }).populate('category');
-
-        console.log(`Found ${products.length} products`);
-        res.json(products);
+        res.json({
+            success: true,
+            count: products.length,
+            data: products
+        });
     } catch (err) {
-        console.error("Search error:", err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ 
+            success: false,
+            message: 'Error searching products',
+            error: err.message 
+        });
     }
 };
 
 
 
 // API endpoint to insert products
-exports.insertMenyProducts =  async (req, res) => {
+
+exports.insertManyProducts = async (req, res) => {
     try {
-        const products = req.body.products; // Assuming the request body contains an array of products
-        const result = await Product.insertMany(products);
-        res.status(201).json({ message: `${result.length} documents inserted`, data: result });
+        const productsToInsert = req.body.map(product => ({
+            ...product,
+            categoryId: new mongoose.Types.ObjectId(product.categoryId)
+        }));
+
+        const savedProducts = await Product.insertMany(productsToInsert);
+        
+        res.status(201).json(savedProducts);
     } catch (error) {
-        res.status(500).json({ message: 'Error inserting documents', error: error.message });
+        console.error(error);
+        res.status(500).json({ 
+            message: error.message,
+            details: error.errors ? Object.keys(error.errors) : null 
+        });
     }
+
 };
