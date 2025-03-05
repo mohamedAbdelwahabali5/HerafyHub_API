@@ -9,7 +9,7 @@ const productController = require("../Products/product.controller");
 router.post("/", productController.createProduct);
 router.get("/", productController.getAllProducts);
 router.get("/search", productController.searchProductsByTitle);
-router.post("/all", productController.insertMenyProducts);
+router.post("/all", productController.insertManyProducts);
 
 // Then place parameter routes
 router.get("/:id", productController.getProductById);
