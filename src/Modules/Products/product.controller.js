@@ -1,6 +1,5 @@
 // Contains logic for handling Product operations like adding, updating, and deleting
 
-
 const Product = require('../../../Database/Models/product.model');
 const mongoose = require("mongoose");
 
@@ -43,10 +42,13 @@ exports.getAllProducts = async (req, res) => {
 
         let query = {};
         if (req.query.categoryId) {
-            query.category = req.query.categoryId; // تصفية المنتجات بناءً على categoryId
+            query.categoryId = req.query.categoryId; // Changed from categoryId to category to match schema
         }
 
-        let products = await Product.find(query).skip(skip).limit(limit);
+        let products = await Product.find(query)
+            .populate('categoryId')  // Added populate to get category details
+            .skip(skip)
+            .limit(limit);
         let totalProducts = await Product.countDocuments(query);
 
         res.json({
@@ -146,4 +148,75 @@ exports.insertManyProducts = async (req, res) => {
         });
     }
 
+};
+
+
+
+// get all products by category id 
+exports.getProductsByCategoryId = async (req, res) => {
+    try {
+        const categoryId = req.params.categoryId;
+
+        const products = await Product.find({ categoryId }) // Changed from category to categoryId
+            .populate('categoryId', 'title description');  // Changed from category to categoryId
+
+        const totalProducts = await Product.countDocuments({ categoryId });
+        const categoryName = products[0]?.categoryId?.title || 'Category not found';
+
+        res.json({
+            success: true,
+            categoryName,
+            totalProducts,
+            products
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            message: 'Error fetching products',
+            error: error.message 
+        });
+    }
+};
+
+
+
+/// count products in each category
+exports.countProductsByCategory = async (req, res) => {
+    try {
+        const categoryCounts = await Product.aggregate([
+            {
+                $group: {
+                    _id: "$categoryId",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    count: 1,
+                    categoryName: { $arrayElemAt: ["$category.title", 0] }
+                }
+            }
+        ]);
+        
+        res.json({
+            success: true,
+            categories: categoryCounts
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            message: 'Error counting products',
+            error: error.message 
+        });
+    }
 };

@@ -10,6 +10,12 @@ router.post("/", productController.createProduct);
 router.get("/", productController.getAllProducts);
 router.get("/search", productController.searchProductsByTitle);
 router.post("/all", productController.insertManyProducts);
+router.get("/categories/count", productController.countProductsByCategory);
+//get all product by category id
+
+router.get("/category/:categoryId", productController.getProductsByCategoryId);
+ //get product by user id
+
 
 // Then place parameter routes
 router.get("/:id", productController.getProductById);
