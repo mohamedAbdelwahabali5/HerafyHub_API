@@ -4,7 +4,8 @@ const User = require('../../../Database/Models/user.model');
 const jwt = require("jsonwebtoken");
 const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
-const asyncHandler = require("express-async-handler");
+// const asyncHandler = require("express-async-handler");
+const asyncHandler = require('../../middlewares/errorHandler');
 
 
 // our auth 
@@ -46,14 +47,14 @@ const loginUser = async (req,res,next)=>{
 
     const user = await User.findOne({email: email});
     if(!user){
-        next(new APIError("Email Or Password are invalid", 401))
-        return ;
+        const error = new APIError("Email Or Password are invalid", 401);
+        return res.status(401).json(error.toJSON());
     }
 
     const isMatch = await bcryptjs.compare(password, user.password);
     if(!isMatch){
-        next(new APIError("Email Or Password are invalid", 401))
-        return ;
+    
+        return res.json(new APIError("Email Or Password are invalid", 401).toJSON());
     }
 
     // generate token for this user --> token 
@@ -74,8 +75,7 @@ const loginUser = async (req,res,next)=>{
         success: true,
         message: "User Login successfully",
         token: token
-    })
-
+    });
 }
 
 // handle user update try asynchandler metthod
@@ -85,7 +85,7 @@ const updateUserProfile = asyncHandler(async(req, res, next) => {
         const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {new: true}); // { new: true } ==> to return the updated user object in the response
         
         if(!updatedUser){
-            return next(new APIError("User not found", 404));
+            return next(new APIError("User not found", 404).toJSON());
         }
         res.json({
             success: true,
@@ -96,6 +96,18 @@ const updateUserProfile = asyncHandler(async(req, res, next) => {
 });
 
 
+// get all users
+
+const getAllUsers = asyncHandler(async (req, res, next) => {
+    const users = await User.find({});
+    res.json({
+        success: true,
+        users
+    })
+});
+
+
+
 
 
 
@@ -103,7 +115,8 @@ const updateUserProfile = asyncHandler(async(req, res, next) => {
 module.exports = {
     registerUser,
     loginUser,
-    updateUserProfile
+    updateUserProfile,
+    getAllUsers
 }
 
 
