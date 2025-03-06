@@ -4,6 +4,7 @@ const User = require('../../../Database/Models/user.model');
 const jwt = require("jsonwebtoken");
 const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
+const asyncHandler = require("express-async-handler");
 
 
 // our auth 
@@ -77,13 +78,32 @@ const loginUser = async (req,res,next)=>{
 
 }
 
+// handle user update try asynchandler metthod
+
+const updateUserProfile = asyncHandler(async(req, res, next) => {
+   
+        const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {new: true}); // { new: true } ==> to return the updated user object in the response
+        
+        if(!updatedUser){
+            return next(new APIError("User not found", 404));
+        }
+        res.json({
+            success: true,
+            message: "User updated successfully",
+            user: updatedUser
+        })
+   
+});
+
+
 
 
 
 // export all functions
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    updateUserProfile
 }
 
 
