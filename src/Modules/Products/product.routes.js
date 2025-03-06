@@ -7,8 +7,9 @@ const productController = require("../Products/product.controller");
 
 // Place specific routes before parameter routes
 router.post("/", productController.createProduct);
-router.get("/", productController.getAllProducts);
-router.get("/search", productController.searchProductsByTitle);
+router.get("/", productController.getProductsCategory);
+router.get("/all", productController.getAllProducts);
+router.get("/search", productController.searchProductsByTitleInCategory);
 router.post("/all", productController.insertManyProducts);
 router.get("/categories/count", productController.countProductsByCategory);
 //get all product by category id

@@ -18,23 +18,22 @@ exports.createProduct = async (req, res) => {
 
 // GET method (Read All)
 
-// exports.getAllProducts = async (req, res) => {
-//     let page = parseInt(req.query.page) || 1;  
-//     let limit = parseInt(req.query.limit) || 10; 
-//     let skip = (page - 1) * limit; 
-
-//     let products = await Product.find().skip(skip).limit(limit); 
-//     let totalProducts = await Product.countDocuments(); // العدد الكلي للمنتجات
-
-//     res.json({
-//         products,
-//         totalProducts,
-//         totalPages: Math.ceil(totalProducts / limit),
-//         currentPage: page
-//     });
-// };
-
 exports.getAllProducts = async (req, res) => {
+    try {
+        let products = await Product.find(); 
+        let totalProducts = await Product.countDocuments();
+
+        res.json({
+            products,
+            totalProducts
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching products", error });
+    }
+};
+
+
+exports.getProductsCategory = async (req, res) => {
     try {
         let page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 10;
@@ -65,7 +64,7 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('category', 'title description'); 
+        const product = await Product.findById(req.params.id).populate('categoryId', 'title description'); 
         if (!product) return res.status(404).json({ message: 'Product not found!' });
         res.json(product);
     } catch (err) {
@@ -98,33 +97,67 @@ exports.deleteProduct = async (req, res) => {
 };
 
 // search by title
-exports.searchProductsByTitle = async (req, res) => {
+exports.searchProductsByTitleInCategory = async (req, res) => {
     try {
-        const { title } = req.query;
-
-        if (!title) {
-            return res.status(400).json({ 
-                success: false,
-                message: "Search term is required" 
-            });
-        }
-
-        const searchRegex = new RegExp(title, 'i');
-        const products = await Product.find({ title: searchRegex }).populate('categoryId');
-
-        res.json({
-            success: true,
-            count: products.length,
-            data: products
+      const { title, categoryId } = req.query;
+      
+      if (!title) {
+        return res.status(400).json({
+          success: false,
+          message: "Search term is required"
         });
+      }
+      
+      // Build query object
+      const query = { title: new RegExp(title, 'i') };
+      
+      // Add category filter if provided
+      if (categoryId) {
+        query.categoryId = categoryId;
+      }
+      
+      const products = await Product.find(query).populate('categoryId');
+      
+      res.json({
+        success: true,
+        count: products.length,
+        data: products
+      });
     } catch (err) {
-        res.status(500).json({ 
-            success: false,
-            message: 'Error searching products',
-            error: err.message 
-        });
+      res.status(500).json({
+        success: false,
+        message: 'Error searching products',
+        error: err.message
+      });
     }
-};
+  };
+// exports.searchProductsByTitle = async (req, res) => {
+//     try {
+//         const { title } = req.query;
+
+//         if (!title) {
+//             return res.status(400).json({ 
+//                 success: false,
+//                 message: "Search term is required" 
+//             });
+//         }
+
+//         const searchRegex = new RegExp(title, 'i');
+//         const products = await Product.find({ title: searchRegex }).populate('categoryId');
+
+//         res.json({
+//             success: true,
+//             count: products.length,
+//             data: products
+//         });
+//     } catch (err) {
+//         res.status(500).json({ 
+//             success: false,
+//             message: 'Error searching products',
+//             error: err.message 
+//         });
+//     }
+// };
 
 
 
