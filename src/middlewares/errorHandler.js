@@ -6,10 +6,16 @@ const asyncHandler = (api) => {
         try {
             await api(req, res, next);
         } catch (err) {
-            const error = new APIError(err.message, 500);
-            return res.status(500).json(error.toJSON());
+            console.error(`Error: ${err.message}`); // Log for debugging
+
+            if (err instanceof APIError) {
+                return res.status(err.statusCode).json(err.toJSON());
+            }
+
+            const error = new APIError(err.message || "Internal Server Error", err.statusCode || 500);
+            return res.status(error.statusCode).json(error.toJSON());
         }
-    }
-}
+    };
+};
 
 module.exports = asyncHandler;

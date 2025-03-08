@@ -10,6 +10,7 @@ const productRoutes = require("./src/Modules/Products/product.routes");
 // const cloudinary = require('./cloudinary');
 
 const authRoutes = require("./src/Modules/Users/user.routes");
+const globalErrorHandler = require("./src/middlewares/globalErrorHandler");
 const app = express();
 app.use(cors());
 
@@ -31,7 +32,8 @@ app.use('/auth',authRoutes)
 
 
 
-
+// Global error handler (MUST be placed at the end)
+app.use(globalErrorHandler);
 // Start Server
 const PORT = process.env.PORT || 4444;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
