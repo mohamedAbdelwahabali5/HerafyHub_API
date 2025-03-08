@@ -32,19 +32,36 @@ const userSchema = new mongoose.Schema({
 
     city: { 
         type: String,  
-        minLength: [3, 'City must be more than 3 characters'],  
-        maxLength: [20, 'City must be less than 20 characters'],
+        validate: {
+            validator: function(v) {
+                return !v || (v.length >= 3 && v.length <= 20);
+            },
+            message: 'City must be between 3 and 20 characters'
+        },
+        required: false,
+        default: undefined
     },
     state: {
         type: String,
-        minLength: [3, 'State must be more than 3 characters'],  
-        maxLength: [20, 'State must be less than 20 characters'],
+        validate: {
+            validator: function(v) {
+                return !v || (v.length >= 3 && v.length <= 20);
+            },
+            message: 'State must be between 3 and 20 characters'
+        },
+        required: false,
+        default: undefined
     },
     zipCode: { 
         type: String,
-        minLength: [5, 'Zip code must be more than 5 characters'],  
-        maxLength: [10, 'Zip code must be less than 10 characters'],
-        match:[/^[0-9]{5,10}$/,'Invalid Zip code' ]
+        validate: {
+            validator: function(v) {
+                return !v || (/^[0-9]{5,10}$/.test(v));
+            },
+            message: 'Zip code must be between 5 and 10 digits'
+        },
+        required: false,
+        default: undefined
     },
 
 
@@ -57,7 +74,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,}$/, 'Invalid Password format'],
+        match: [/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#_])[A-Za-z\d@$!%*?&#_]{8,}$/, 'Invalid Password format'],
+        
     },
     role: {
         type: String,

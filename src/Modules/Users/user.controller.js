@@ -6,6 +6,7 @@ const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
 // const asyncHandler = require("express-async-handler");
 const asyncHandler = require('../../middlewares/errorHandler');
+const { sendWelcomeEmail } = require('../../services/emailService');
 
 
 // our auth 
@@ -18,16 +19,19 @@ const registerUser = async (req, res, next) => {
         // check user already registered ==> email is already existing
         const existingUser = await User.findOne({ email: createUser.email})
         if(existingUser) {
-            return next( new APIError('Email already exists',400));
+            throw new APIError('Email already exists', 400);
 
         }
         const createdUser = new User(createUser);
         const user = await createdUser.save();
 
+        // Send welcome email
+        await sendWelcomeEmail(user.email, user.firstName);
+    
         // so after that we need to response on request success
-        res.json({
+        res.status(201).json({
             success: true,
-            message:'User Register successfully',
+            message: 'User registered successfully',
             user
         })
     
