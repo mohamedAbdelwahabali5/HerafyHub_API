@@ -3,12 +3,14 @@ const express = require('express');
 const router = express.Router();
 const favoriteController = require("../Favorite/favorite.controller");
 const authMiddleware = require("../../middlewares/userAuth.Middleware");
+const protection=require("../../middlewares/authMiddleware")
  
 router.use(authMiddleware);
+
+router.get("/",protection.protectionMW,favoriteController.getFavorite);  
+router.post("/add",protection.protectionMW,favoriteController.addToFavorite);  
+router.delete("/remove/:productId",protection.protectionMW,favoriteController.removeFromFavorite);
  
-router.post("/add", favoriteController.addToFavorite);  
-router.delete("/remove/:productId", favoriteController.removeFromFavorite);
-router.get("/", favoriteController.getFavorite);  
  
 module.exports = router;
  
