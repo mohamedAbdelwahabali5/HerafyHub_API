@@ -83,6 +83,8 @@ const userSchema = new mongoose.Schema({
         default: 'user'  // default role is 'user'
     },
     profileImage: { type: String },
+    passwordResetToken: String,
+    passwordResetExpires: Date
 },
 { timestamps: true });
 
@@ -98,3 +100,4 @@ userSchema.pre('save', async function(){
 // to-do  
 
 module.exports = mongoose.model('User', userSchema);
+

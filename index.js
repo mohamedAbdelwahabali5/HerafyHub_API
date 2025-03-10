@@ -1,5 +1,4 @@
 // The main entry file that starts the server and loads all necessary configurations
-
 const express = require("express");
 const cors = require('cors');
 // require('dotenv').config();
@@ -12,7 +11,15 @@ const productRoutes = require("./src/Modules/Products/product.routes");
 const authRoutes = require("./src/Modules/Users/user.routes");
 const globalErrorHandler = require("./src/middlewares/globalErrorHandler");
 const app = express();
-app.use(cors());
+
+// CORS Configuration
+const corsOptions = {
+    origin: ['http://localhost:4200', 'http://127.0.0.1:4200',BASE_URL], // adding vercel url
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 
 // database connection
 connectDB();

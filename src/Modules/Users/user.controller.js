@@ -6,7 +6,8 @@ const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
 // const asyncHandler = require("express-async-handler");
 const asyncHandler = require('../../middlewares/errorHandler');
-const { sendWelcomeEmail } = require('../../services/emailService');
+const { sendWelcomeEmail } = require('../../services/email.service');
+const crypto = require('crypto');
 
 
 // our auth 
@@ -112,6 +113,74 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 
 
+// handle forget password
+
+const forgotPassword = asyncHandler(async (req, res, next) => {
+    const {email} = req.body;
+    const user = await User.findOne({email: email});
+    if(!user){
+        return next(new APIError("User not found", 404).toJSON());
+    }
+
+    // jwt not best practice
+    // Generate a secure random token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Save hashed token to user
+    user.passwordResetToken = passwordResetToken;
+    user.resetTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
+    // Send unhashed token in email (will be hashed again for verification)
+    try {
+        await sendResetPasswordEmail(email, resetToken);
+        res.json({
+            success: true,
+            message: "Reset password link sent to email"
+        });
+    } catch (err) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save();
+        
+         
+        return  new APIError("Error sending email", 500).toJSON();
+    }
+});
+
+// handle reset password
+const resetPassword = asyncHandler(async(req,res) => {
+    const {password} = req.body;
+    const {token} = req.params;
+
+    const passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+        passwordResetToken,
+        resetTokenExpires: { $gt: Date.now() }
+    });
+    if(!user){
+        return next(new APIError("Invalid token or token expired", 400).toJSON());
+    }
+
+    // Hash the new password
+    user.password = await bcryptjs.hash(password, 6);
+    user.passwordResetToken = undefined;
+    user.resetTokenExpires = undefined;
+    await user.save();
+
+    res.json({
+        success: true,
+        message: "Password reset successfully"
+    });
+
+});
+
+
+
 
 
 
@@ -120,7 +189,9 @@ module.exports = {
     registerUser,
     loginUser,
     updateUserProfile,
-    getAllUsers
+    getAllUsers,
+    forgotPassword,
+    resetPassword
 }
 
 
