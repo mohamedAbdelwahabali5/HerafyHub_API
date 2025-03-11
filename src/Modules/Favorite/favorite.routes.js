@@ -10,6 +10,7 @@ router.use(authMiddleware);
 router.get("/",protection.protectionMW,favoriteController.getFavorite);  
 router.post("/add",protection.protectionMW,favoriteController.addToFavorite);  
 router.delete("/remove/:productId",protection.protectionMW,favoriteController.removeFromFavorite);
+ router.delete("/clear/",protection.protectionMW,favoriteController.clearFavorite); 
  
  
 module.exports = router;
