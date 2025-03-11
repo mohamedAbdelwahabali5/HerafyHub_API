@@ -10,7 +10,10 @@ const productRoutes = require("./src/Modules/Products/product.routes");
 // const cloudinary = require('./cloudinary');
 
 const authRoutes = require("./src/Modules/Users/user.routes");
+const favoriteRoutes = require("./src/Modules/Favorite/favorite.routes");
+const cartRoutes=require("./src/Modules/Cart/cart.routes");
 const globalErrorHandler = require("./src/middlewares/globalErrorHandler");
+
 const app = express();
 app.use(cors());
 
@@ -26,10 +29,8 @@ app.use(express.json());
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);
 app.use('/auth',authRoutes)
-
-
-
-
+app.use("/favorite", favoriteRoutes);
+app.use("/cart",cartRoutes);
 
 
 // Global error handler (MUST be placed at the end)
