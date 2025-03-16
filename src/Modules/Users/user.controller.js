@@ -6,7 +6,8 @@ const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
 // const asyncHandler = require("express-async-handler");
 const asyncHandler = require('../../middlewares/errorHandler');
-const { sendWelcomeEmail } = require('../../services/emailService');
+const { sendWelcomeEmail, sendPasswordResetEmail } = require('../../services/email.service');
+const crypto = require('crypto');
 
 
 // our auth 
@@ -112,6 +113,88 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 
 
+// handle forget password
+
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+        const error = new APIError("User not found", 404);
+        return res.status(404).json(error.toJSON());
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Save reset token
+    user.resetToken = hashedToken;
+    user.resetTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save({ validateBeforeSave: false }); // Skip validation
+
+    try {
+        // Send reset email
+        await sendPasswordResetEmail(user.email, resetToken);
+
+        res.json({
+            success: true,
+            message: "Password reset link sent to email"
+        });
+    } catch (error) {
+        // If email fails, clean up the token
+        user.resetToken = undefined;
+        user.resetTokenExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        const apiError = new APIError("Error sending reset email", 500);
+        return res.status(500).json(apiError.toJSON());
+    }
+});
+
+// handle reset password
+const resetPassword = asyncHandler(async(req, res, next) => {
+    const {password, confirmPassword} = req.body;
+    const {token} = req.params;
+
+    // Verify passwords match
+    if (password !== confirmPassword) {
+        const error = new APIError("Passwords do not match", 400);
+        return res.status(400).json(error.toJSON());
+    }
+
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+    const user = await User.findOne({
+        resetToken: hashedToken,  // Changed from passwordResetToken to match model
+        resetTokenExpires: { $gt: Date.now() }
+    });
+
+    if(!user) {
+        const error = new APIError("Invalid token or token expired", 400);
+        return res.status(400).json(error.toJSON());
+    }
+
+    // Update password
+    user.password = password;  // Let the model handle hashing
+    user.resetToken = undefined;
+    user.resetTokenExpires = undefined;
+    await user.save();  // This will trigger password validation and hashing
+
+    res.json({
+        success: true,
+        message: "Password reset successfully"
+    });
+});
+
+
+
 
 
 
@@ -120,7 +203,9 @@ module.exports = {
     registerUser,
     loginUser,
     updateUserProfile,
-    getAllUsers
+    getAllUsers,
+    forgotPassword,
+    resetPassword
 }
 
 

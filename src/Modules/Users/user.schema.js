@@ -1,4 +1,4 @@
- // first we want to validate on our schema 
+// first we want to validate on our schema 
  const {z}  = require('zod');
  const userSchemaValidation = z.object({
     firstName: z.string()
@@ -47,8 +47,34 @@
  })
 
 
+// forget pass schema
+const forgotPassSchema = z.object({
+    email: z.string()
+        .email("Invalid email format")
+        .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Email does not match required format")
+});
+
+// reset pass schema
+const resetPassSchema = z.object({
+        password: z.string()
+        .min(8,"Password must be at least 8 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,}$/,
+            "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character"
+        ),
+    confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
+})
+
  // Schema for user updates (all fields optional)
 const userUpdateSchemaValidation = userSchemaValidation.partial();
 
 
- module.exports = {userSchemaValidation,userUpdateSchemaValidation};
+ module.exports = {
+        userSchemaValidation,
+        userUpdateSchemaValidation,
+        forgotPassSchema,
+        resetPassSchema
+};

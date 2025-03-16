@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const asyncHandler = require('../middlewares/errorHandler');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -29,4 +30,26 @@ const sendWelcomeEmail = async (userEmail, firstName) => {
     }
 };
 
-module.exports = { sendWelcomeEmail };
+const sendPasswordResetEmail = asyncHandler (async(userEmail, resetToken) => {
+    const resetUrl=`${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: userEmail,
+        subject: 'Password Reset - HerafyHub',
+        html: `
+            <h1>Reset Password Request</h1>
+            <p>You requested a password reset for your HerafyHub account.</p>
+            <p>Click the following link to reset your password:</p>
+            <a href="${resetUrl}">Reset Password</a>
+            <p>If you did not request a password reset, please ignore this email.</p>
+        `
+    };
+    await transporter.sendMail(mailOptions);
+    
+});  
+
+module.exports = { 
+    sendWelcomeEmail,
+    sendPasswordResetEmail
+ };
