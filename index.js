@@ -1,8 +1,8 @@
 // The main entry file that starts the server and loads all necessary configurations
 const express = require("express");
-const cors = require('cors');
+const cors = require("cors");
 // require('dotenv').config();
-const connectDB = require('./Database/connection');
+const connectDB = require("./Database/connection");
 const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
 
@@ -10,17 +10,19 @@ const productRoutes = require("./src/Modules/Products/product.routes");
 
 const authRoutes = require("./src/Modules/Users/user.routes");
 const favoriteRoutes = require("./src/Modules/Favorite/favorite.routes");
-const cartRoutes=require("./src/Modules/Cart/cart.routes");
+const cartRoutes = require("./src/Modules/Cart/cart.routes");
+
+const orderRoutes = require("./src/Modules/Orders/order.routes");
 const globalErrorHandler = require("./src/middlewares/globalErrorHandler");
 
 const app = express();
 
 // CORS Configuration
 const corsOptions = {
-    origin: ['http://localhost:4200', 'http://127.0.0.1:4200'/*,BASE_UR*/], // adding vercel url
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204
+  origin: ["http://localhost:4200", "http://127.0.0.1:4200" /*,BASE_UR*/], // adding vercel url
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
 
@@ -35,10 +37,10 @@ app.use(express.json());
 
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);
-app.use('/auth',authRoutes)
+app.use("/auth", authRoutes);
 app.use("/favorite", favoriteRoutes);
-app.use("/cart",cartRoutes);
-
+app.use("/cart", cartRoutes);
+app.use("/order", orderRoutes);
 
 // Global error handler (MUST be placed at the end)
 app.use(globalErrorHandler);
