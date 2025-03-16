@@ -6,7 +6,7 @@ const APIError = require('../../utils/errors/APIError');
 const bcryptjs = require('bcryptjs');
 // const asyncHandler = require("express-async-handler");
 const asyncHandler = require('../../middlewares/errorHandler');
-const { sendWelcomeEmail } = require('../../services/email.service');
+const { sendWelcomeEmail, sendPasswordResetEmail } = require('../../services/email.service');
 const crypto = require('crypto');
 
 
@@ -115,40 +115,43 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 // handle forget password
 
-const forgotPassword = asyncHandler(async (req, res, next) => {
-    const {email} = req.body;
-    const user = await User.findOne({email: email});
-    if(!user){
-        return next(new APIError("User not found", 404).toJSON());
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+        const error = new APIError("User not found", 404);
+        return res.status(404).json(error.toJSON());
     }
 
-    // jwt not best practice
-    // Generate a secure random token
+    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const passwordResetToken = crypto
+    const hashedToken = crypto
         .createHash('sha256')
         .update(resetToken)
         .digest('hex');
 
-    // Save hashed token to user
-    user.passwordResetToken = passwordResetToken;
+    // Save reset token
+    user.resetToken = hashedToken;
     user.resetTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    await user.save();
+    await user.save({ validateBeforeSave: false }); // Skip validation
 
-    // Send unhashed token in email (will be hashed again for verification)
     try {
-        await sendResetPasswordEmail(email, resetToken);
+        // Send reset email
+        await sendPasswordResetEmail(user.email, resetToken);
+
         res.json({
             success: true,
-            message: "Reset password link sent to email"
+            message: "Password reset link sent to email"
         });
-    } catch (err) {
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-        await user.save();
-        
-         
-        return  new APIError("Error sending email", 500).toJSON();
+    } catch (error) {
+        // If email fails, clean up the token
+        user.resetToken = undefined;
+        user.resetTokenExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        const apiError = new APIError("Error sending reset email", 500);
+        return res.status(500).json(apiError.toJSON());
     }
 });
 

@@ -26,4 +26,17 @@ function protectionMW(req,res,next){
         next();
 }
 
-module.exports = {protectionMW};
+// role middleware
+const roleMiddleware = (role) => {
+    return (req,res,next) => {
+        if(req.user.role===role){
+            next();
+        }else{
+            throw new APIError('You are not authorized to perform this action',403);
+        }
+    }
+
+}
+
+
+module.exports = {protectionMW,roleMiddleware};

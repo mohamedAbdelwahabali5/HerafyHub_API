@@ -83,15 +83,18 @@ const userSchema = new mongoose.Schema({
         default: 'user'  // default role is 'user'
     },
     profileImage: { type: String },
-    passwordResetToken: String,
-    passwordResetExpires: Date
+    resetToken: String,
+    resetTokenExpires: Date,
 },
 { timestamps: true });
 
 
 // hashing passwor before saving it to database
 
-userSchema.pre('save', async function(){
+userSchema.pre('save', async function(next){
+        // Only hash the password if it has been modified (or is new)
+    if (!this.isModified('password')) return next();
+
     this.password = await bcryptjs.hash(this.password,6);
 })
 

@@ -11,8 +11,8 @@ const { userSchemaValidation, userUpdateSchemaValidation, forgotPassSchema, rese
 
 router.post('/register',validateSchema(userSchemaValidation), registerUser);
 router.post('/login', loginUser);
-router.put('/update-profile',protectionMW,validateSchema(userUpdateSchemaValidation),updateUserProfile  )
-router.get('/users', getAllUsers),
+router.put('/update-profile',protectionMW,validateSchema(userUpdateSchemaValidation),updateUserProfile  );
+router.get('/users', getAllUsers);
 router.post('/forgot-password',validateSchema(forgotPassSchema),forgotPassword);
 router.post('/reset-password/:token', validateSchema(resetPassSchema), resetPassword);
 
