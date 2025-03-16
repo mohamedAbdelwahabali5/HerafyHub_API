@@ -156,30 +156,41 @@ const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 // handle reset password
-const resetPassword = asyncHandler(async(req,res) => {
-    const {password} = req.body;
+const resetPassword = asyncHandler(async(req, res, next) => {
+    const {password, confirmPassword} = req.body;
     const {token} = req.params;
 
-    const passwordResetToken = crypto.createHash('sha256').update(token).digest('hex');
-    const user = await User.findOne({
-        passwordResetToken,
-        resetTokenExpires: { $gt: Date.now() }
-    });
-    if(!user){
-        return next(new APIError("Invalid token or token expired", 400).toJSON());
+    // Verify passwords match
+    if (password !== confirmPassword) {
+        const error = new APIError("Passwords do not match", 400);
+        return res.status(400).json(error.toJSON());
     }
 
-    // Hash the new password
-    user.password = await bcryptjs.hash(password, 6);
-    user.passwordResetToken = undefined;
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+    const user = await User.findOne({
+        resetToken: hashedToken,  // Changed from passwordResetToken to match model
+        resetTokenExpires: { $gt: Date.now() }
+    });
+
+    if(!user) {
+        const error = new APIError("Invalid token or token expired", 400);
+        return res.status(400).json(error.toJSON());
+    }
+
+    // Update password
+    user.password = password;  // Let the model handle hashing
+    user.resetToken = undefined;
     user.resetTokenExpires = undefined;
-    await user.save();
+    await user.save();  // This will trigger password validation and hashing
 
     res.json({
         success: true,
         message: "Password reset successfully"
     });
-
 });
 
 
