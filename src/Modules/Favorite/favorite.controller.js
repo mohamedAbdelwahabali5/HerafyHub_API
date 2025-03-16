@@ -1,7 +1,6 @@
 const Favorite = require("../../../Database/Models/favorite.model");
 const Product = require("../../../Database/Models/product.model");
-
-// Add a product to the favorite list
+ 
 exports.addToFavorite = async (req, res, next) => {
   try {
       if (!req.user) {
@@ -23,12 +22,10 @@ exports.addToFavorite = async (req, res, next) => {
           favorite = new Favorite({ user: userId, products: [] });
       }
  
-      // Check if product is already in favorites
       if (favorite.products.includes(productId)) {
           return res.status(400).json({ message: "Product is already in favorites" });
       }
  
-      // Add product to favorites
       favorite.products.push(productId);
       await favorite.save();
  
@@ -38,22 +35,17 @@ exports.addToFavorite = async (req, res, next) => {
       next(new APIError(error.message, 500));
   }
 };
-// Remove a product from the favorite list
 exports.removeFromFavorite = async (req, res, next) => {
   try {
       if (!req.user) {
           return res.status(401).json({ message: "Unauthorized: Please log in to remove favorites." });
       }
- 
       const userId = req.user.id;
       const { productId } = req.params;
- 
       const favorite = await Favorite.findOne({ user: userId });
       if (!favorite) {
           return res.status(404).json({ message: "Favorite list not found" });
       }
- 
-      // Remove product
       favorite.products = favorite.products.filter(p => p.toString() !== productId);
       await favorite.save();
  
@@ -87,20 +79,22 @@ exports.clearFavorite = async (req, res, next) => {
       if (!req.user) {
           return res.status(401).json({ message: "Unauthorized: Please log in to clear favorites." });
       }
-
+ 
       const userId = req.user.id;
       const favorite = await Favorite.findOne({ user: userId });
-
+ 
       if (!favorite) {
           return res.status(404).json({ message: "Favorite list not found" });
       }
-
+ 
       // Clear the entire favorite list
       favorite.products = [];
       await favorite.save();
-
+ 
       res.status(200).json({ message: "All favorites cleared successfully", favorite });
   } catch (error) {
       next(new APIError(error.message, 500));
   }
 };
+ 
+ 
