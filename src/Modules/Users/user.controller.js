@@ -114,7 +114,6 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 
 // handle forget password
-
 const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
     
