@@ -195,6 +195,22 @@ const resetPassword = asyncHandler(async(req, res, next) => {
 
 
 
+// get user by id 
+const getUserById = asyncHandler(async (req, res, next) => {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+        const error = new APIError("User not found", 404);
+        return res.status(404).json(error.toJSON());
+    }
+    res.json({
+        success: true,
+        user
+    });
+});
+
+
+
 
 
 
@@ -205,9 +221,6 @@ module.exports = {
     updateUserProfile,
     getAllUsers,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    getUserById,
 }
-
-
-
-
