@@ -82,7 +82,7 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'user'],
         default: 'user'  // default role is 'user'
     },
-    profileImage: { type: String },
+    profileImage: { type: String, default: '' },
     resetToken: String,
     resetTokenExpires: Date,
 },
