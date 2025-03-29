@@ -5,13 +5,19 @@ const {registerUser, loginUser,updateUserProfile,getAllUsers, forgotPassword, re
 const validateSchema = require('../../utils/validation/validateSchema');
 const {  protectionMW } = require('../../middlewares/authMiddleware');
 const { userSchemaValidation, userUpdateSchemaValidation, forgotPassSchema, resetPassSchema } = require('./user.schema');
+const upload = require('../../utils/multer');
 
 
 
 
 router.post('/register',validateSchema(userSchemaValidation), registerUser);
 router.post('/login', loginUser);
-router.put('/update-profile',protectionMW,validateSchema(userUpdateSchemaValidation),updateUserProfile  );
+router.put('/update-profile',
+    protectionMW,
+    upload.any(),
+    validateSchema(userUpdateSchemaValidation),
+    updateUserProfile
+);
 router.get('/users', getAllUsers);
 router.post('/forgot-password',validateSchema(forgotPassSchema),forgotPassword);
 router.post('/reset-password/:token', validateSchema(resetPassSchema), resetPassword);

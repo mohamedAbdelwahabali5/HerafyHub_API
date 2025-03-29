@@ -8,6 +8,7 @@ const bcryptjs = require('bcryptjs');
 const asyncHandler = require('../../middlewares/errorHandler');
 const { sendWelcomeEmail, sendPasswordResetEmail } = require('../../services/email.service');
 const crypto = require('crypto');
+const cloudinary = require('../../../cloudinary');
 
 
 // our auth 
@@ -86,18 +87,44 @@ const loginUser = async (req,res,next)=>{
 // handle user update try asynchandler metthod
 
 const updateUserProfile = asyncHandler(async(req, res, next) => {
-   
-        const updatedUser = await User.findByIdAndUpdate(req.user.id, req.body, {new: true}); // { new: true } ==> to return the updated user object in the response
+    try {
+        const updateData = { ...req.body };
         
-        if(!updatedUser){
-            return next(new APIError("User not found", 404).toJSON());
+        // Check if files were uploaded
+        if (req.files && req.files.length > 0) {
+            const imageFile = req.files.find(file => file.fieldname === 'profileImage');
+            if (imageFile) {
+                // Upload to cloudinary
+                const result = await cloudinary.uploader.upload(imageFile.path, {
+                    folder: 'herafyhub/users',
+                    width: 300,
+                    crop: "scale"
+                });
+                
+                // Add cloudinary URL to update data
+                updateData.profileImage = result.secure_url;
+            }
         }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, 
+            updateData,
+            { new: true }
+        );
+        
+        if (!updatedUser) {
+            return next(new APIError("User not found", 404));
+        }
+
         res.json({
             success: true,
-            message: "User updated successfully",
+            message: "Profile updated successfully",
             user: updatedUser
-        })
-   
+        });
+    } catch (error) {
+        console.error('Update error:', error);  // Add logging for debugging
+        next(new APIError(error.message, 500));
+    }
 });
 
 
