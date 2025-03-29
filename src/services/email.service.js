@@ -32,7 +32,7 @@ const sendWelcomeEmail = async (userEmail, firstName) => {
 
 const sendPasswordResetEmail = asyncHandler (async(userEmail, resetToken) => {
     const resetUrl=`${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
+    
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: userEmail,
