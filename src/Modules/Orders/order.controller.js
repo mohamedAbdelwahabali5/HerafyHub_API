@@ -10,6 +10,7 @@ const createOrder = async (req, res, next) => {
       user: req.user.id, // Get user from auth middleware
       products: req.body.products,
       totalPrice: req.body.totalPrice,
+      paymentMethod: req.body.paymentMethod,
     };
 
     // Validate required fields
@@ -22,7 +23,7 @@ const createOrder = async (req, res, next) => {
 
     // Populate the product details
     const populatedOrder = await Order.findById(savedOrder._id)
-      .populate('user', 'firstName lastName email')
+      .populate('user', 'firstName lastName address phone')
       .populate('products.product', 'title currentprice oldprice'); 
 
     res.status(201).json({
@@ -75,7 +76,7 @@ const cancelOrder = async (req, res, next) => {
   try {
     const canceledOrder = await Order.findByIdAndUpdate(
       orderId,
-      { status: "Canceled", IsCancelled: true }, // Set IsCancelled to true
+      { status: "Canceled", IsCancelled: true }, 
       { new: true }
     );
 
@@ -97,7 +98,7 @@ const cancelOrder = async (req, res, next) => {
 const getAllOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({
-      status: { $ne: "Canceled" } // Ensure proper case
+      status: { $ne: "Canceled" } 
     });
 
     if (!orders || orders.length === 0) {

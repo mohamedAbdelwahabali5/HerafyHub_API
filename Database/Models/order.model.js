@@ -1,7 +1,5 @@
-// Defines the Schema and Model for Order
- 
 const mongoose = require("mongoose");
- 
+
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -16,24 +14,29 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
-        // name: {
-        //  type: String,
-        //   required: true,
-        // }, 
         quantity: {
           type: Number,
           required: true,
+          min: 1,
+          max: 100, 
         },
       },
     ],
     totalPrice: {
       type: Number,
       required: true,
+      min: 0,
+      max: 100000, 
     },
     status: {
       type: String,
       enum: ["In-Progress", "delivered", "cancelled"],
       default: "In-Progress",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["Credit Card", "PayPal", "Cash on Delivery"],
+      required: true, 
     },
     createdAt: {
       type: Date,
@@ -43,12 +46,6 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    deliveredAt: {
-      type: Date,
-    },
-    cancelledAt: {
-      type: Date,
-    },
     IsCancelled: {
       type: Boolean,
       default: false,
@@ -56,7 +53,5 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
- 
+
 module.exports = mongoose.model("Order", orderSchema);
- 
- 
