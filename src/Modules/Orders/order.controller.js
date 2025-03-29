@@ -75,7 +75,7 @@ const cancelOrder = async (req, res, next) => {
   try {
     const canceledOrder = await Order.findByIdAndUpdate(
       orderId,
-      { status: "Canceled" },
+      { status: "Canceled", IsCancelled: true }, // Set IsCancelled to true
       { new: true }
     );
 
@@ -93,12 +93,17 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
+
 const getAllOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find();
-    if (!orders) {
-      throw new APIError("No orders found", 404);
+    const orders = await Order.find({
+      status: { $ne: "Canceled" } // Ensure proper case
+    });
+
+    if (!orders || orders.length === 0) {
+      throw new APIError("No active orders found", 404);
     }
+
     res.status(200).json({
       success: true,
       message: "Orders fetched successfully",
@@ -108,6 +113,7 @@ const getAllOrders = async (req, res, next) => {
     return next(new APIError(error.message, 500));
   }
 };
+
 
 const getOrderById = async (req, res, next) => {
   const { orderId } = req.params;

@@ -9,10 +9,10 @@ router.get("/", orderController.getAllOrders);
 // POST new order
 router.post("/",protectionMW ,orderController.createOrder);
 // GET order by ID
-router.get("/:id", orderController.getOrderById);
+router.get("/:orderId", orderController.getOrderById);
 // PUT update order by ID
-router.put("/:id", orderController.updateOrder);
+router.put("/:orderId", orderController.updateOrder);
 // DELETE order by ID
-router.delete("/:id", orderController.cancelOrder);
+router.delete("/:orderId", orderController.cancelOrder);
 
 module.exports = router;
