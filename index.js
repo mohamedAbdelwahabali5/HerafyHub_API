@@ -44,6 +44,7 @@ app.use("/order", orderRoutes);
 
 // Global error handler (MUST be placed at the end)
 app.use(globalErrorHandler);
+
 // Start Server
 const PORT = process.env.PORT || 4444;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

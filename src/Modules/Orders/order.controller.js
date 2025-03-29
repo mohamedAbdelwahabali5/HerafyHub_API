@@ -1,130 +1,71 @@
-// Contains logic for handling Order operations like placing, updating, and canceling orders
+const Order = require("../../../Database/Models/order.model"); // Import Order model
+const Product = require("../../../Database/Models/product.model"); // Import Product model
 
-const Order = require("../../../Database/Models/order.model");
-
-const mongoose = require("mongoose");
-const APIError = require("../../utils/errors/APIError");
-
-// Place an order
-
-const createOrder = async (req, res, next) => {
-  const addOrder = { ...req.body };
-
+// **1. Create a New Order**
+exports.createOrder = async (req, res) => {
+  console.log("Create Order Called", req.body);
   try {
-    if (!addOrder.userId || !addOrder.items || !addOrder.items.length) {
-      throw new APIError("Invalid order data", 400);
+    const { products, totalPrice } = req.body;
+    if (!products || !totalPrice) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const newOrder = await new Order(addOrder).save();
-    res.status(201).json({
-      success: true,
-      message: "Order created successfully",
-      order: newOrder,
+    const newOrder = new Order({
+      user: req.user.id, 
+      products,
+      totalPrice,
     });
+
+    await newOrder.save();
+    res.status(201).json({ message: "Order created", order: newOrder });
   } catch (error) {
-    return next(new APIError(error.message, 500));
+    console.error("Order Creation Error:", error);
+    res.status(500).json({ message: "Error creating order" });
   }
 };
 
-// Update an order
 
-const updateOrder = async (req, res, next) => {
-  const { orderId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
-  }
-
+// **2. Get All Orders**
+exports.getAllOrders = async (req, res) => {
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, req.body, {
-      new: true,
-    });
-
-    if (!updatedOrder) {
-      throw new APIError("Order not found", 404);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Order updated successfully",
-      order: updatedOrder,
-    });
+    const orders = await Order.find().populate("user", "name email").populate("products.product"); // Populate user and product details if needed
+    res.status(200).json(orders);
   } catch (error) {
-    return next(new APIError(error.message, 500));
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Error fetching orders" });
   }
 };
 
-// Cancel an order
-
-const cancelOrder = async (req, res, next) => {
-  const { orderId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
-  }
-
+// **2. Get Order by ID**
+exports.getOrderById = async (req, res) => {
   try {
-    const canceledOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status: "Canceled" },
-      { new: true }
-    );
+    const { id } = req.params;
+    const order = await Order.findById(id).populate("user", "name email").populate("products.product");
 
-    if (!canceledOrder) {
-      throw new APIError("Order not found", 404);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Order canceled successfully",
-      order: canceledOrder,
-    });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
-
-const getAllOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find();
-    if (!orders) {
-      throw new APIError("No orders found", 404);
-    }
-    res.status(200).json({
-      success: true,
-      message: "Orders fetched successfully",
-      orders,
-    });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
-
-const getOrderById = async (req, res, next) => {
-  const { orderId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
-  }
-
-  try {
-    const order = await Order.findById(orderId);
     if (!order) {
-      throw new APIError("Order not found", 404);
+      return res.status(404).json({ message: "Order not found" });
     }
-    res.status(200).json({
-      success: true,
-      message: "Order fetched successfully",
-      order,
-    });
+
+    res.status(200).json(order);
   } catch (error) {
-    return next(new APIError(error.message, 500));
+    console.error("Error fetching order by ID:", error);
+    res.status(500).json({ message: "Error fetching order" });
   }
 };
 
-module.exports = {
-  createOrder,
-  updateOrder,
-  cancelOrder,
-  getAllOrders,
-  getOrderById,
+// **3. Delete Order**
+exports.deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedOrder = await Order.findByIdAndDelete(id);
+
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    res.status(500).json({ message: "Error deleting order" });
+  }
 };

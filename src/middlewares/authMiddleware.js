@@ -1,13 +1,6 @@
- // Responsible for verifying user permissions using JWT or another authentication system
-
 
 const APIError = require('../utils/errors/APIError');
 const jwt = require('jsonwebtoken')
-
-
-
-
-// adding protection meddileware to verify user permissions
 function protectionMW(req,res,next){
         //check request has a Authorization-Header
         const auth = req.headers.authorization;
