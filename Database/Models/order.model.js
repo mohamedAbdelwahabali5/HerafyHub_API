@@ -1,7 +1,7 @@
 // Defines the Schema and Model for Order
-
+ 
 const mongoose = require("mongoose");
-
+ 
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -16,6 +16,10 @@ const orderSchema = new mongoose.Schema(
           ref: "Product",
           required: true,
         },
+        // name: {
+        //  type: String,
+        //   required: true,
+        // }, 
         quantity: {
           type: Number,
           required: true,
@@ -52,5 +56,7 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-const Order = mongoose.model("Order", orderSchema);
+ 
+module.exports = mongoose.model("Order", orderSchema);
+ 
+ 

@@ -7,7 +7,7 @@ const orderController = require("./order.controller");
 // GET all orders
 router.get("/", orderController.getAllOrders);
 // POST new order
-router.post("/", orderController.createOrder);
+router.post("/",protectionMW ,orderController.createOrder);
 // GET order by ID
 router.get("/:id", orderController.getOrderById);
 // PUT update order by ID

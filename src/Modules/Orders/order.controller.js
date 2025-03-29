@@ -1,28 +1,37 @@
-// Contains logic for handling Order operations like placing, updating, and canceling orders
-
 const Order = require("../../../Database/Models/order.model");
-
 const mongoose = require("mongoose");
 const APIError = require("../../utils/errors/APIError");
 
 // Place an order
 
 const createOrder = async (req, res, next) => {
-  const addOrder = { ...req.body };
-
   try {
-    if (!addOrder.userId || !addOrder.items || !addOrder.items.length) {
-      throw new APIError("Invalid order data", 400);
+    const orderData = {
+      user: req.user.id, // Get user from auth middleware
+      products: req.body.products,
+      totalPrice: req.body.totalPrice,
+    };
+
+    // Validate required fields
+    if (!orderData.products || !orderData.products.length || !orderData.totalPrice) {
+      throw new APIError("Missing required order data", 400);
     }
 
-    const newOrder = await new Order(addOrder).save();
+    const newOrder = new Order(orderData);
+    const savedOrder = await newOrder.save();
+
+    // Populate the product details
+    const populatedOrder = await Order.findById(savedOrder._id)
+      .populate('user', 'firstName lastName email')
+      .populate('products.product', 'title currentprice oldprice'); 
+
     res.status(201).json({
       success: true,
       message: "Order created successfully",
-      order: newOrder,
+      order: populatedOrder,
     });
   } catch (error) {
-    return next(new APIError(error.message, 500));
+    return next(new APIError(error.message, 400));
   }
 };
 
