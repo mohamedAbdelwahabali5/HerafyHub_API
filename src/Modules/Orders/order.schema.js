@@ -1,40 +1,54 @@
-const { z } = require("zod");
+const { z } = require('zod');
 
-// Order schema validation
-const orderSchemaValidation = z.object({
-  user: z.string().min(1, "User ID is required."), // Ensuring a valid user ID
-  products: z
-    .array(
-      z.object({
-        product: z.string().min(1, "Product ID is required."),
-        quantity: z
-          .number()
-          .min(1, "Quantity must be at least 1.")
-          .max(100, "Quantity cannot exceed 100."),
-      })
-    )
-    .nonempty("At least one product is required."),
-  totalPrice: z
-    .number()
-    .min(0, "Total price cannot be negative.")
-    .max(100000, "Total price exceeds the limit."),
-  status: z.enum(["In-Progress", "delivered", "cancelled"], {
-    errorMap: () => ({ message: "Invalid status value." }),
-  }),
-  paymentMethod: z.enum(
-    ["Credit Card", "PayPal", "Cash on Delivery"],
-    {
-      errorMap: () => ({ message: "Invalid payment method." }),
-    }
-  ),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-  deliveredAt: z.date().nullable().optional(),
-  cancelledAt: z.date().nullable().optional(),
-  IsCancelled: z.boolean().default(false),
+const createOrderValidation = z.object({
+  shippingAddress: z.object({
+    name: z.string()
+      .trim()
+      .min(2, { message: "Name must be at least 2 characters long" })
+      .max(100, { message: "Name cannot exceed 100 characters" })
+      .optional(),
+    
+    address: z.string()
+      .trim()
+      .min(3, { message: "Address must be at least 3 characters long" })
+      .max(250, { message: "Address cannot exceed 250 characters" })
+      .optional(),
+    
+    phone: z.string()
+      .trim()
+      .regex(/^[0-9]{10,15}$/, "Invalid phone number")
+      .optional()
+  }).optional(),
+  
+  products: z.array(
+    z.object({
+      productId: z.string()
+        .trim()
+        .min(1, { message: "Product ID cannot be empty" }),
+      
+      quantity: z.number()
+        .int()
+        .min(1, { message: "Quantity must be at least 1" })
+        .max(100, { message: "Quantity cannot exceed 100" })
+    })
+  ).min(1, { message: "At least one product is required" }),
+  
+  paymentMethod: z.enum(["Credit Card", "PayPal", "Cash on Delivery"])
+    .default("Cash on Delivery")
 });
 
-// Exporting the validation schema
+const validateOrderSchema = (data) => {
+  const { error, value } = createOrderValidation.safeParse(data);
+
+  if (error) {
+    console.error('Schema Validation Errors:', error.issues.map(issue => issue.message));
+    throw error;
+  }
+
+  return value;
+};
+
 module.exports = {
-  orderSchemaValidation,
+  createOrderValidation,
+  validateOrderSchema
 };

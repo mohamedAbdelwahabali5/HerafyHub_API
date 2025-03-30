@@ -7,51 +7,52 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    products: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 100, 
-        },
+    shippingAddress: {
+      name: {
+        type: String,
+        required: true,
       },
-    ],
+      address: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+    },
     totalPrice: {
       type: Number,
-      required: true,
-      min: 0,
-      max: 100000, 
+      required: true
     },
     status: {
       type: String,
-      enum: ["In-Progress", "delivered", "cancelled"],
+      enum: ["In-Progress", "Confirmed", "Processing", "Shipping", "Out for Delivery", "Delivered", "Cancelled"],
       default: "In-Progress",
     },
     paymentMethod: {
       type: String,
-      enum: ["Credit Card", "PayPal", "Cash on Delivery"],
-      required: true, 
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+      enum: ["Credit Card","Cash on Delivery"],
+      required: true,
+      default: "Cash on Delivery"
     },
     IsCancelled: {
       type: Boolean,
       default: false,
-    },
+    }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+  }
 );
+
+// Virtual to populate order items
+orderSchema.virtual('orderItems', {
+  ref: 'OrderItem',
+  localField: '_id',
+  foreignField: 'order'
+});
 
 module.exports = mongoose.model("Order", orderSchema);

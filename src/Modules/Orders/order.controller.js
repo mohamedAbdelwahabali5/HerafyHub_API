@@ -1,146 +1,169 @@
 const Order = require("../../../Database/Models/order.model");
-const mongoose = require("mongoose");
+const OrderItem = require("../../../Database/Models/orderItem.model");
+const Product = require("../../../Database/Models/product.model");
+const User = require("../../../Database/Models/user.model");
 const APIError = require("../../utils/errors/APIError");
+const asyncHandler = require("../../middlewares/errorHandler");
+const mongoose = require("mongoose");
 
-// Place an order
+const createOrder = asyncHandler(async (req, res) => {
 
-const createOrder = async (req, res, next) => {
-  try {
-    const orderData = {
-      user: req.user.id, // Get user from auth middleware
-      products: req.body.products,
-      totalPrice: req.body.totalPrice,
-      paymentMethod: req.body.paymentMethod,
-    };
-
-    // Validate required fields
-    if (!orderData.products || !orderData.products.length || !orderData.totalPrice) {
-      throw new APIError("Missing required order data", 400);
+    // Find the user to get default shipping information
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      throw new APIError("User not found", 404);
     }
 
+    // Prepare shipping address if is empty get it from user model to be as defualt
+    const shippingAddress = req.body.shippingAddress || {
+      name: `${user.firstName} ${user.lastName}`,
+      address: `${user.address} - ${user.city} - ${user.state}`,
+      phone: user.phone 
+    };
+
+    // Validate input
+    if (!req.body.products || req.body.products.length === 0) {
+      console.error('No products in order');
+      throw new APIError("No products in the order", 400);
+    }
+
+    // Prepare order data
+    const orderData = {
+      user: req.user.id,
+      shippingAddress: shippingAddress,
+      paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
+      totalPrice: 0
+    };
+
+    // Calculate total price and validate products
+    const orderItems = [];
+    let totalPrice = 0;
+
+    for (const item of req.body.products) {
+      console.log(`Checking product: ${item.productId}`);
+
+      // Validate product ID
+      if (!mongoose.Types.ObjectId.isValid(item.productId)) {
+        console.error(`Invalid product ID: ${item.productId}`);
+        throw new APIError(`Invalid product ID: ${item.productId}`, 400);
+      }
+
+      // Find product
+      const product = await Product.findById(item.productId);
+      
+      if (!product) {
+        console.error(`Product not found: ${item.productId}`);
+        throw new APIError(`Product ${item.productId} not found`, 404);
+      }
+
+      // Calculate price
+      const itemPrice = product.currentprice * item.quantity;
+      totalPrice += itemPrice;
+
+      orderItems.push({
+        product: item.productId,
+        quantity: item.quantity,
+        price: product.currentprice
+      });
+    }
+
+    // Set total price
+    orderData.totalPrice = totalPrice;
+
+    // Create the order in the database
     const newOrder = new Order(orderData);
     const savedOrder = await newOrder.save();
 
-    // Populate the product details
+    // Create order items
+    const savedOrderItems = await OrderItem.insertMany(
+      orderItems.map(item => ({
+        ...item,
+        order: savedOrder._id
+      }))
+    );
+
+    // Populate the order with full details
     const populatedOrder = await Order.findById(savedOrder._id)
       .populate('user', 'firstName lastName address phone')
-      .populate('products.product', 'title currentprice oldprice'); 
-
+      .populate({
+        path: 'orderItems',
+        populate: {
+          path: 'product',
+          select: 'title currentprice'
+        }
+      });
     res.status(201).json({
       success: true,
       message: "Order created successfully",
       order: populatedOrder,
     });
-  } catch (error) {
-    return next(new APIError(error.message, 400));
-  }
-};
 
-// Update an order
 
-const updateOrder = async (req, res, next) => {
-  const { orderId } = req.params;
+});
 
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
+const cancelOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const order = await Order.findById(id);
+  if (!order) {
+    throw new APIError("Order not found", 404);
   }
 
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, req.body, {
-      new: true,
+  // Can only cancel orders that are In-Progress
+  if (order.status !== "In-Progress") {
+    throw new APIError("Cannot cancel order - Order is not in progress", 400);
+  }
+
+  order.status = "Cancelled";
+  order.IsCancelled = true;
+  await order.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Order cancelled successfully",
+    order
+  });
+});
+
+const getAllOrder = asyncHandler(async (req, res) => {
+  const orders = await Order.find({})
+    .populate('user', 'firstName lastName phone address')
+    .populate({
+      path: 'orderItems',
+      populate: {
+        path: 'product',
+        select: 'title currentprice'
+      }
     });
+  
+  res.status(200).json({
+    success: true,
+    message: "All orders retrieved successfully",
+    orders
+  });
+});
 
-    if (!updatedOrder) {
-      throw new APIError("Order not found", 404);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Order updated successfully",
-      order: updatedOrder,
+const getUserOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({ user: req.user.id })
+    .populate('user', 'firstName lastName phone address')
+    .populate({
+      path: 'orderItems',
+      populate: {
+        path: 'product',
+        select: 'title currentprice'
+      }
     });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
-
-// Cancel an order
-
-const cancelOrder = async (req, res, next) => {
-  const { orderId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
-  }
-
-  try {
-    const canceledOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { status: "Canceled", IsCancelled: true }, 
-      { new: true }
-    );
-
-    if (!canceledOrder) {
-      throw new APIError("Order not found", 404);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Order canceled successfully",
-      order: canceledOrder,
-    });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
-
-
-const getAllOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find({
-      status: { $ne: "Canceled" } 
-    });
-
-    if (!orders || orders.length === 0) {
-      throw new APIError("No active orders found", 404);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Orders fetched successfully",
-      orders,
-    });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
-
-
-const getOrderById = async (req, res, next) => {
-  const { orderId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(orderId)) {
-    throw new APIError("Invalid order ID", 400);
-  }
-
-  try {
-    const order = await Order.findById(orderId);
-    if (!order) {
-      throw new APIError("Order not found", 404);
-    }
-    res.status(200).json({
-      success: true,
-      message: "Order fetched successfully",
-      order,
-    });
-  } catch (error) {
-    return next(new APIError(error.message, 500));
-  }
-};
+  
+  res.status(200).json({
+    success: true,
+    message: "User orders retrieved successfully",
+    orders
+  });
+});
 
 module.exports = {
   createOrder,
-  updateOrder,
   cancelOrder,
-  getAllOrders,
-  getOrderById,
+  getAllOrder,
+  getUserOrders
 };
