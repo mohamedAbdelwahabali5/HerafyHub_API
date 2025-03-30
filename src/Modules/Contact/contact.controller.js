@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const { APIError } = require("../../utils/errors/APIError");
+
 exports.sendContactEmail = async (req, res) => {
   try {
     const { firstName, lastName, email, subject, message } = req.body;
@@ -18,24 +19,27 @@ exports.sendContactEmail = async (req, res) => {
       },
     });
 
-    // Setup email data with JSON-formatted text
+    // Create email content
+    const emailContent = `
+      NEW CONTACT REQUEST
+      -------------------------------
+      Name: ${firstName} ${lastName}
+      Email: ${email}
+      Subject: ${subject}
+      
+      Message:
+      ${message}
+      
+      -------------------------------
+      Received: ${new Date().toLocaleString()}
+    `;
+
+    // Setup email data
     const mailOptions = {
       from: `"Herafy Hub Contact" <${process.env.EMAIL_USER}>`,
       to: process.env.CONTACT_EMAIL,
-      subject: `[JSON] Contact Form: ${subject}`,
-      text: JSON.stringify(
-        {
-          contactRequest: {
-            timestamp: new Date().toISOString(),
-            name: `${firstName} ${lastName}`.trim(),
-            email: email,
-            subject: subject,
-            message: message,
-          },
-        },
-        null,
-        2
-      ), // Pretty-print JSON with 2-space indentation
+      subject: `Contact Form: ${subject}`,
+      text: emailContent,
     };
 
     // Send email
