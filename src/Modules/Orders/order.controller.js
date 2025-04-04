@@ -32,7 +32,8 @@ const createOrder = asyncHandler(async (req, res) => {
       user: req.user.id,
       shippingAddress: shippingAddress,
       paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
-      totalPrice: 0
+      totalPrice: 0,
+      status:req.body.status,
     };
 
     // Calculate total price and validate products
