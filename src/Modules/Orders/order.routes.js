@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { protectionMW } = require("../../middlewares/authMiddleware");
+const { protectionMW, roleMiddleware } = require("../../middlewares/authMiddleware");
 const {createOrder,cancelOrder,getAllOrder,getUserOrders} = require("./order.controller");
 const validateSchema = require("../../utils/validation/validateSchema");
 const { createOrderValidation } = require("./order.schema");
@@ -12,7 +12,7 @@ router.post("/",
   createOrder
 );
 
-router.get("/", getAllOrder);
+router.get("/",roleMiddleware, getAllOrder);
 router.get("/user", getUserOrders);
 router.delete("/:id", cancelOrder);
 
