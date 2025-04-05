@@ -170,18 +170,39 @@ const getUserOrders = asyncHandler(async (req, res) => {
     }
   };
 
-  // Get recent activity (last 5 orders)
-  const recentActivity = orders
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 5)
-    .map(order => ({
+  // Get recent activity (last 5 actions across all orders)
+  const activities = orders.reduce((acc, order) => {
+    // Add order creation activity
+    acc.push({
       orderNumber: order.invoiceNumber,
       status: order.status,
       totalPrice: order.totalPrice,
       date: order.createdAt,
       items: order.orderItems.length,
-      action: getOrderAction(order.status)
-    }));
+      action: 'placed',
+      type: 'creation'
+    });
+
+    // Add status change activities (if status is not In-Progress)
+    if (order.status !== 'In-Progress') {
+      acc.push({
+        orderNumber: order.invoiceNumber,
+        status: order.status,
+        totalPrice: order.totalPrice,
+        date: order.updatedAt, // Use updatedAt for status changes
+        items: order.orderItems.length,
+        action: getOrderAction(order.status),
+        type: 'status_change'
+      });
+    }
+
+    return acc;
+  }, []);
+
+  // Sort all activities by date and get the most recent 5
+  const recentActivity = activities
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
   
   // Add helper function for order action text
   function getOrderAction(status) {
@@ -192,6 +213,8 @@ const getUserOrders = asyncHandler(async (req, res) => {
         return 'shipped';
       case 'In-Progress':
         return 'placed';
+      case 'Cancelled' :
+        return 'cancelled'; 
       default:
         return status.toLowerCase();
     }
