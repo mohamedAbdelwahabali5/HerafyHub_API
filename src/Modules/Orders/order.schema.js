@@ -34,21 +34,18 @@ const createOrderValidation = z.object({
   ).min(1, { message: "At least one product is required" }),
   
   paymentMethod: z.enum(["Credit Card", "Cash on Delivery"])
-    .default("Cash on Delivery")
+    .default("Cash on Delivery"),
+  status: z.enum([
+    "In-Progress",
+    "Confirmed",
+    "Processing",
+    "Shipping",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled"
+  ]).default("In-Progress").optional()
 });
-
-// const validateOrderSchema = (data) => {
-//   const { error, value } = createOrderValidation.safeParse(data);
-
-//   if (error) {
-//     console.error('Schema Validation Errors:', error.issues.map(issue => issue.message));
-//     throw error;
-//   }
-
-//   return value;
-// };
 
 module.exports = {
   createOrderValidation,
-  // validateOrderSchema
 };

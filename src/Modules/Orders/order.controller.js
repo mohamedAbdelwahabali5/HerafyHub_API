@@ -32,7 +32,8 @@ const createOrder = asyncHandler(async (req, res) => {
       user: req.user.id,
       shippingAddress: shippingAddress,
       paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
-      totalPrice: 0
+      totalPrice: 0,
+      status:req.body.status,
     };
 
     // Calculate total price and validate products
@@ -144,6 +145,7 @@ const getAllOrder = asyncHandler(async (req, res) => {
 });
 
 const getUserOrders = asyncHandler(async (req, res) => {
+  // Get user orders with population
   const orders = await Order.find({ user: req.user.id })
     .populate('user', 'firstName lastName phone address')
     .populate({
@@ -153,10 +155,76 @@ const getUserOrders = asyncHandler(async (req, res) => {
         select: 'title currentprice'
       }
     });
+
+  // Calculate order statistics
+  const orderStats = {
+    totalOrders: orders.length,
+    totalSpent: orders.reduce((total, order) => total + order.totalPrice, 0),
+    ordersByStatus: {
+      inProgress: orders.filter(order => order.status === "In-Progress").length,
+      confirmed: orders.filter(order => order.status === "Confirmed").length,
+      processing: orders.filter(order => order.status === "Processing").length,
+      shipping: orders.filter(order => order.status === "Shipping").length,
+      delivered: orders.filter(order => order.status === "Delivered").length,
+      cancelled: orders.filter(order => order.status === "Cancelled").length
+    }
+  };
+
+  // Get recent activity (last 5 actions across all orders)
+  const activities = orders.reduce((acc, order) => {
+    // Add order creation activity
+    acc.push({
+      orderNumber: order.invoiceNumber,
+      status: order.status,
+      totalPrice: order.totalPrice,
+      date: order.createdAt,
+      items: order.orderItems.length,
+      action: 'placed',
+      type: 'creation'
+    });
+
+    // Add status change activities (if status is not In-Progress)
+    if (order.status !== 'In-Progress') {
+      acc.push({
+        orderNumber: order.invoiceNumber,
+        status: order.status,
+        totalPrice: order.totalPrice,
+        date: order.updatedAt, // Use updatedAt for status changes
+        items: order.orderItems.length,
+        action: getOrderAction(order.status),
+        type: 'status_change'
+      });
+    }
+
+    return acc;
+  }, []);
+
+  // Sort all activities by date and get the most recent 5
+  const recentActivity = activities
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
   
+  // Add helper function for order action text
+  function getOrderAction(status) {
+    switch(status) {
+      case 'Delivered':
+        return 'completed';
+      case 'Shipping':
+        return 'shipped';
+      case 'In-Progress':
+        return 'placed';
+      case 'Cancelled' :
+        return 'cancelled'; 
+      default:
+        return status.toLowerCase();
+    }
+  }
+
   res.status(200).json({
     success: true,
     message: "User orders retrieved successfully",
+    statistics: orderStats,
+    recentActivity,
     orders
   });
 });
