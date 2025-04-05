@@ -34,8 +34,18 @@ const createOrderValidation = z.object({
   ).min(1, { message: "At least one product is required" }),
   
   paymentMethod: z.enum(["Credit Card", "Cash on Delivery"])
-    .default("Cash on Delivery")
+    .default("Cash on Delivery"),
+  status: z.enum([
+    "In-Progress",
+    "Confirmed",
+    "Processing",
+    "Shipping",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled"
+  ]).default("In-Progress").optional()
 });
+
 module.exports = {
   createOrderValidation,
 };

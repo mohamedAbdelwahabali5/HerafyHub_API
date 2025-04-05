@@ -122,7 +122,7 @@ const updateUserProfile = asyncHandler(async(req, res, next) => {
             user: updatedUser
         });
     } catch (error) {
-        console.error('Update error:', error);  // Add logging for debugging
+        console.error('Update error:', error);
         next(new APIError(error.message, 500));
     }
 });
@@ -235,6 +235,34 @@ const getUserById = asyncHandler(async (req, res, next) => {
     });
 });
 
+// delete profile image
+const deleteProfileImage = asyncHandler(async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+        
+        if (!user.profileImage) {
+            throw new APIError("No profile image to delete", 400);
+        }
+
+        // Extract public_id from Cloudinary URL
+        const publicId = user.profileImage.split('/').slice(-2).join('/').split('.')[0];
+        
+        // Delete from Cloudinary
+        await cloudinary.uploader.destroy(`herafyhub/users/${publicId}`);
+        
+        // Update user document without triggering validation
+        user.profileImage = '';
+        await user.save({ validateBeforeSave: false });
+
+        res.json({
+            success: true,
+            message: "Profile image deleted successfully",
+            user
+        });
+    } catch (error) {
+        next(new APIError(error.message, error.statusCode || 500));
+    }
+});
 
 
 
@@ -249,4 +277,5 @@ module.exports = {
     forgotPassword,
     resetPassword,
     getUserById,
-}
+    deleteProfileImage
+} ;
