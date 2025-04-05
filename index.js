@@ -5,6 +5,7 @@ const cors = require("cors");
 const connectDB = require("./Database/connection");
 const categoryRoutes = require("./src/Modules/Categories/category.routes");
 const productRoutes = require("./src/Modules/Products/product.routes");
+const paymobRoutes = require('./src/Modules/PaymobIntegration/paymob.routes');
 
 // const cloudinary = require('./cloudinary');
 
@@ -45,6 +46,7 @@ app.use("/auth", authRoutes);
 app.use("/favorite", favoriteRoutes);
 app.use("/cart", cartRoutes);
 app.use("/order", orderRoutes);
+app.use('/paymob', paymobRoutes);
 
 // Global error handler (MUST be placed at the end)
 app.use(globalErrorHandler);
