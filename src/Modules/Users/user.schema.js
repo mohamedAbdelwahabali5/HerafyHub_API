@@ -55,11 +55,14 @@ const forgotPassSchema = z.object({
 });
 
 // reset pass schema
+
+
+// Fix password regex in resetPassSchema
 const resetPassSchema = z.object({
-        password: z.string()
-        .min(8,"Password must be at least 8 characters long")
+    password: z.string()
+        .min(8, "Password must be at least 8 characters long")
         .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&#])[A-Za-z\d@$!%?&#]{8,}$/,
+            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#_])[A-Za-z\d@$!%*?&#_]{8,}$/,
             "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character"
         ),
     confirmPassword: z.string()
@@ -76,5 +79,5 @@ const userUpdateSchemaValidation = userSchemaValidation.partial();
         userSchemaValidation,
         userUpdateSchemaValidation,
         forgotPassSchema,
-        resetPassSchema
+        resetPassSchema,
 };
