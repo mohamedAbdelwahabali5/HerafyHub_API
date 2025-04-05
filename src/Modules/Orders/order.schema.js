@@ -36,19 +36,6 @@ const createOrderValidation = z.object({
   paymentMethod: z.enum(["Credit Card", "Cash on Delivery"])
     .default("Cash on Delivery")
 });
-
-// const validateOrderSchema = (data) => {
-//   const { error, value } = createOrderValidation.safeParse(data);
-
-//   if (error) {
-//     console.error('Schema Validation Errors:', error.issues.map(issue => issue.message));
-//     throw error;
-//   }
-
-//   return value;
-// };
-
 module.exports = {
   createOrderValidation,
-  // validateOrderSchema
 };

@@ -14,6 +14,9 @@ const favoriteRoutes = require("./src/Modules/Favorite/favorite.routes");
 const cartRoutes = require("./src/Modules/Cart/cart.routes");
 
 const orderRoutes = require("./src/Modules/Orders/order.routes");
+
+const contactRoutes = require("./src/Modules/Contact/contact.routes");
+
 const globalErrorHandler = require("./src/middlewares/globalErrorHandler");
 
 const app = express();
@@ -35,6 +38,7 @@ app.use(express.json());
 
 // const testSearch = await Product.find({ title: /cotton/i });
 // console.log("Direct test search found:", testSearch.length);
+app.use("/contact", contactRoutes);
 
 app.use("/category", categoryRoutes);
 app.use("/product", productRoutes);

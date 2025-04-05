@@ -144,6 +144,7 @@ const getAllOrder = asyncHandler(async (req, res) => {
 });
 
 const getUserOrders = asyncHandler(async (req, res) => {
+  // Get user orders with population
   const orders = await Order.find({ user: req.user.id })
     .populate('user', 'firstName lastName phone address')
     .populate({
@@ -153,10 +154,53 @@ const getUserOrders = asyncHandler(async (req, res) => {
         select: 'title currentprice'
       }
     });
+
+  // Calculate order statistics
+  const orderStats = {
+    totalOrders: orders.length,
+    totalSpent: orders.reduce((total, order) => total + order.totalPrice, 0),
+    ordersByStatus: {
+      inProgress: orders.filter(order => order.status === "In-Progress").length,
+      confirmed: orders.filter(order => order.status === "Confirmed").length,
+      processing: orders.filter(order => order.status === "Processing").length,
+      shipping: orders.filter(order => order.status === "Shipping").length,
+      delivered: orders.filter(order => order.status === "Delivered").length,
+      cancelled: orders.filter(order => order.status === "Cancelled").length
+    }
+  };
+
+  // Get recent activity (last 5 orders)
+  const recentActivity = orders
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5)
+    .map(order => ({
+      orderNumber: order.invoiceNumber,
+      status: order.status,
+      totalPrice: order.totalPrice,
+      date: order.createdAt,
+      items: order.orderItems.length,
+      action: getOrderAction(order.status)
+    }));
   
+  // Add helper function for order action text
+  function getOrderAction(status) {
+    switch(status) {
+      case 'Delivered':
+        return 'completed';
+      case 'Shipping':
+        return 'shipped';
+      case 'In-Progress':
+        return 'placed';
+      default:
+        return status.toLowerCase();
+    }
+  }
+
   res.status(200).json({
     success: true,
     message: "User orders retrieved successfully",
+    statistics: orderStats,
+    recentActivity,
     orders
   });
 });
