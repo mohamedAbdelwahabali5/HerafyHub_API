@@ -33,7 +33,8 @@ const createOrder = asyncHandler(async (req, res) => {
       shippingAddress: shippingAddress,
       paymentMethod: req.body.paymentMethod || 'Cash on Delivery',
       totalPrice: 0,
-      status:req.body.status,
+      status: req.body.status,
+      discount: 4.00  // Add fixed discount amount
     };
 
     // Calculate total price and validate products
@@ -68,7 +69,8 @@ const createOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    // Set total price
+    // Set total price with discount
+    totalPrice = Math.max(0, totalPrice - orderData.discount); // Ensure total doesn't go below 0
     orderData.totalPrice = totalPrice;
 
     // Create the order in the database
@@ -159,7 +161,10 @@ const getUserOrders = asyncHandler(async (req, res) => {
   // Calculate order statistics
   const orderStats = {
     totalOrders: orders.length,
-    totalSpent: orders.reduce((total, order) => total + order.totalPrice, 0),
+    totalSpent: orders.reduce((total, order) => {
+        // Only add to total if order is not cancelled
+        return order.status !== "Cancelled" ? total + order.totalPrice : total;
+    }, 0),
     ordersByStatus: {
       inProgress: orders.filter(order => order.status === "In-Progress").length,
       confirmed: orders.filter(order => order.status === "Confirmed").length,
@@ -229,9 +234,47 @@ const getUserOrders = asyncHandler(async (req, res) => {
   });
 });
 
+
+// get order details
+const getOrderDetails = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Validate order ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new APIError("Invalid order ID format", 400);
+  }
+
+  // Find order with populated fields
+  const order = await Order.findById(id)
+    .populate('user', 'firstName lastName phone address')
+    .populate({
+      path: 'orderItems',
+      populate: {
+        path: 'product',
+        select: 'title currentprice description images'
+      }
+    });
+
+  if (!order) {
+    throw new APIError("Order not found", 404);
+  }
+
+  // Check if user is authorized to view this order
+  if (order.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+    throw new APIError("Not authorized to view this order", 403);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Order details retrieved successfully",
+    order
+  });
+});
+
 module.exports = {
   createOrder,
   cancelOrder,
-  getAllOrder,
-  getUserOrders
+  getAllOrder, // for admin testing
+  getUserOrders,
+  getOrderDetails  
 };
