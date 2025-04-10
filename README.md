@@ -12,7 +12,6 @@
 - [@Sama Ibrahim]()
 - [@Nehad Ashraf](https://github.com/nehadashraf)
 ## Table of Content
----
 - [🔍 Overview](#-overview)
 - [🎯 Key Features](#-key-features)
 - [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
