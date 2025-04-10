@@ -5,7 +5,7 @@
 
 
 ## Team Member
----
+
 - [@Omar Araby](https://github.com/OmarAraby)
 - [@Mohamed Abd Elwahab](https://github.com/mohamedAbdelwahabali5)
 - [@Mostafa Bolbol](https://github.com/MBolbol)
@@ -23,7 +23,7 @@
 - [🤝 How to Contribute](#-how-to-contribute)
 
 ## 🔍 Overview
----
+
 > A robust Node.js backend powering HerafyHub's e-commerce platform with:
 - Secure user authentication 🔒
 - Comprehensive product management 📦  
@@ -31,22 +31,16 @@
 - Scalable architecture ⚡
 
 ## 🎯 Key Features
----
-  
 - 🔐 **Authentication & Authorization**
 	- JWT-based authentication
 	- Role-based access control
 	- Secure password hashing
-
-  
 
 - 📦 **Product Management**
 	  - CRUD operations for products
 	  - Category management
 	  - Product search and filtering
 	  - Rating system
-
-  
 
 - 👥 **User Management**
 	- User registration and login
@@ -61,7 +55,7 @@
 	- Status updates
 
 ## 🛠️ Tech Stack
----
+
 
 ### Core Components
 ```mermaid
@@ -76,7 +70,6 @@ graph TD
 ```
 
 ## 🚀 Quick Start
----
 
 ### 1. Clone & Install
 ```bash
@@ -155,7 +148,7 @@ npm start
 ```
 
 ## 📚 API Documentation
----
+
 ### Authentication Endpoints
 ```plaintext
 POST   /api/auth/register   - Register new user
@@ -188,7 +181,6 @@ PUT    /api/orders/:id     - Update order status
 
 
 ## 🏗️Project Structure
----
 
 ```bash
 HerafyHub/
@@ -237,7 +229,6 @@ HerafyHub/
 ```
 
 ## 🚂 Railway.app Deployment
----
 
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2FmohamedAbdelwahabali5%2FHerafyHub_API)
@@ -267,7 +258,6 @@ HerafyHub/
    ```
 
 ## 🤝 How to Contribute
----
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/new-payment`)
