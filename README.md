@@ -1,5 +1,4 @@
 
-
 # 🛍️ HerafyHub - E-commerce API Backend
 
 >   HerafyHub is an e-commerce platform backend built using Node.js, Express, and MongoDB. It provides APIs for managing products, users, orders, and categories.
@@ -13,16 +12,15 @@
 - [@Sama Ibrahim]()
 - [@Nehad Ashraf](https://github.com/nehadashraf)
 ## Table of Content
-----
-- [[#🔍 Overview]]
-- [[#🎯 Key Features]]
-- [[#🛠️ Tech Stack]]
-- [[#🚀 Quick Start]]
-- [[#🏗️Project Structure]]
-- [[#📚 API Documentation]]
-- [[#🚂 Railway.app Deployment]]
-- [[#🤝 How to Contribute]]
-
+---
+- [🔍 Overview](#-overview)
+- [🎯 Key Features](#-key-features)
+- [🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
+- [🚀 Quick Start](#-quick-start)
+- [🏗️ Project Structure](#%EF%B8%8F-project-structure)
+- [📚 API Documentation](#-api-documentation)
+- [🚂 Railway.app Deployment](#-railwayapp-deployment)
+- [🤝 How to Contribute](#-how-to-contribute)
 
 ## 🔍 Overview
 ---
@@ -192,79 +190,50 @@ PUT    /api/orders/:id     - Update order status
 ## 🏗️Project Structure
 ---
 
-```
+```bash
 HerafyHub/
-
 │── /DB
-
-│   │── /Models
-
-│   │   │── category.model.js      # Mongoose model for Category
-
-│   │   │── order.model.js         # Mongoose model for Order
-
-│   │   │── product.model.js       # Mongoose model for Product
-
-│   │   │── user.model.js          # Mongoose model for User
-
-│   │── connection.js              # Database connection setup
-
+│   │── /Models
+│   │   │── category.model.js      # Category schema definition
+│   │   │── order.model.js         # Order schema with status tracking
+│   │   │── product.model.js       # Product schema with image uploads
+│   │   │── user.model.js          # User schema with auth fields
+│   │── connection.js              # MongoDB connection config
+│
 │── /src
-
-│   │── /middlewares
-
-│   │   │── authMiddleware.js      # Authentication & Authorization Middleware
-
-│   │   │── errorHandler.js        # Global Error Handling Middleware
-
-│   │── /Modules
-
-│   │   │── /Categories
-
-│   │   │   │── category.controller.js # Business logic for categories
-
-│   │   │   │── category.routes.js     # API routes for categories
-
-│   │   │── /Orders
-
-│   │   │   │── order.controller.js    # Business logic for orders
-
-│   │   │   │── order.routes.js        # API routes for orders
-
-│   │   │── /Products
-
-│   │   │   │── product.controller.js  # Business logic for products
-
-│   │   │   │── product.routes.js      # API routes for products
-
-│   │   │── /Users
-
-│   │   │   │── user.controller.js     # Business logic for users
-
-│   │   │   │── user.routes.js         # API routes for users
-
-│   │── /services
-
-│   │   │── category.service.js        # Handles database queries for categories
-
-│   │   │── order.service.js           # Handles database queries for orders
-
-│   │   │── product.service.js         # Handles database queries for products
-
-│   │   │── user.service.js            # Handles database queries for users
-
-│   │── /utils
-
-│   │   │── emailSender.js             # Utility to send emails
-
-│   │   │── errorHandler.js            # Utility for better error responses
-
-│── index.js                           # Entry point of the server
-
-│── package.json                        # Project dependencies and metadata
-
-│── package-lock.json                    # Locks dependency versions
-
+│   │── /middlewares
+│   │   │── authMiddleware.js      # JWT verification & role checks
+│   │   │── errorHandler.js        # Custom error responses
+│   │
+│   │── /Modules
+│   │   │── /Categories            # Category management
+│   │   │   │── category.controller.js # CRUD operations
+│   │   │   │── category.routes.js     # REST endpoints
+│   │   │
+│   │   │── /Orders                # Order processing
+│   │   │   │── order.controller.js    # Checkout logic
+│   │   │   │── order.routes.js        # Order routes
+│   │   │
+│   │   │── /Products              # Product catalog
+│   │   │   │── product.controller.js  # Inventory management
+│   │   │   │── product.routes.js      # Product API
+│   │   │
+│   │   │── /Users                 # User management
+│   │   │   │── user.controller.js     # Auth handlers
+│   │   │   │── user.routes.js         # User routes
+│   │
+│   │── /services                  # Business logic
+│   │   │── category.service.js    # Category DB operations  
+│   │   │── order.service.js       # Order processing
+│   │   │── product.service.js     # Product inventory
+│   │   │── user.service.js        # User management
+│   │
+│   │── /utils
+│   │   │── emailSender.js         # Transactional emails
+│   │   │── errorHandler.js        # Error formatting
+│
+│── index.js                       # Server entry point
+│── package.json                   # Dependency management
 ```
 
 ## 🚂 Railway.app Deployment
@@ -314,5 +283,8 @@ HerafyHub/
   <a href="mailto:mohamedAbdelwahabali5@example.com">Contact</a> | 
   <a href="https://github.com/mohamedAbdelwahabali5">GitHub</a>
 </div>
+
+
+
 
 
