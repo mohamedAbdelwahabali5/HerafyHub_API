@@ -24,7 +24,7 @@ const app = express();
 // CORS Configuration
 const corsOptions = {
 
-  origin: ["http://localhost:4200", "http://127.0.0.1:4200" ,process.env.FRONTEND_URL], // adding vercel url
+  origin: ["http://localhost:4200", "http://127.0.0.1:4200" , process.env.FRONTEND_URL], // adding vercel url
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,

@@ -130,34 +130,6 @@ exports.searchProductsByTitleInCategory = async (req, res) => {
       });
     }
   };
-// exports.searchProductsByTitle = async (req, res) => {
-//     try {
-//         const { title } = req.query;
-
-//         if (!title) {
-//             return res.status(400).json({ 
-//                 success: false,
-//                 message: "Search term is required" 
-//             });
-//         }
-
-//         const searchRegex = new RegExp(title, 'i');
-//         const products = await Product.find({ title: searchRegex }).populate('categoryId');
-
-//         res.json({
-//             success: true,
-//             count: products.length,
-//             data: products
-//         });
-//     } catch (err) {
-//         res.status(500).json({ 
-//             success: false,
-//             message: 'Error searching products',
-//             error: err.message 
-//         });
-//     }
-// };
-
 
 
 // API endpoint to insert products
