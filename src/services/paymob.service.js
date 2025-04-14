@@ -47,7 +47,7 @@ const getPaymentKey = async (authToken, orderId, amountCents, billingData) => {
       billing_data: billingData,
       currency: 'EGP',
       integration_id: PAYMOB_INTEGRATION_ID,  
-      return_url: 'https://e969-156-206-145-12.ngrok-free.app/checkout',
+      return_url: 'https://herafy-hub.netlify.app/checkout',
       lock_order_when_paid: "true",
       show_save_card: "false"
     });
@@ -56,8 +56,6 @@ const getPaymentKey = async (authToken, orderId, amountCents, billingData) => {
     throw new Error('Failed to get payment key');
   }
 };
-
-
 
 const verifyPayment = async (transactionId) => {
   try {
